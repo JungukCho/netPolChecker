@@ -37,6 +37,20 @@ func NetPolPodSelector(netPol *networkingv1.NetworkPolicy) map[string]string {
 	return netPol.Spec.PodSelector.MatchLabels
 }
 
+func IngressNsSelectors(ingressRules []networkingv1.NetworkPolicyIngressRule) map[string]string {
+	ingressNsSelectors := map[string]string{}
+	for _, ingressRule := range ingressRules {
+		for _, networkPolicyPeer := range ingressRule.From {
+			if networkPolicyPeer.NamespaceSelector != nil {
+				for key, val := range networkPolicyPeer.PodSelector.MatchLabels {
+					ingressNsSelectors[key] = val
+				}
+			}
+		}
+	}
+	return ingressNsSelectors
+}
+
 func IngressPodSelectors(ingressRules []networkingv1.NetworkPolicyIngressRule) map[string]string {
 	ingressPodSelectors := map[string]string{}
 	for _, ingressRule := range ingressRules {
@@ -79,6 +93,20 @@ func EgressPodSelectors(egressRules []networkingv1.NetworkPolicyEgressRule) map[
 	return egressPodSelectors
 }
 
+func EgressNsSelectors(egressRules []networkingv1.NetworkPolicyEgressRule) map[string]string {
+	egressNsSelectors := map[string]string{}
+	for _, egressRule := range egressRules {
+		for _, networkPolicyPeer := range egressRule.To {
+			if networkPolicyPeer.NamespaceSelector != nil {
+				for key, val := range networkPolicyPeer.NamespaceSelector.MatchLabels {
+					egressNsSelectors[key] = val
+				}
+			}
+		}
+	}
+	return egressNsSelectors
+}
+
 // Store all information
 func EgressPortInfo(egressRules []networkingv1.NetworkPolicyEgressRule) map[string][]string {
 	// map : key : protocol, value : slices of portNums
@@ -110,8 +138,20 @@ func createNetPolObjFromYaml(file string) *networkingv1.NetworkPolicy {
 	return &netPol
 }
 
-func isSubsets(protocol string, ingressPorts, egressPorts map[string][]string) bool {
+func isSubset(protocol string, ingressPorts, egressPorts map[string][]string) bool {
 	return funk.Subset(ingressPorts[protocol], egressPorts[protocol]) // true
+}
+
+// check all protocols
+func isSubsets(ingressPorts, egressPorts map[string][]string) bool {
+	for protocol, _ := range ingressPorts {
+		isSubset := funk.Subset(ingressPorts[protocol], egressPorts[protocol])
+		if !isSubset {
+			return false
+		}
+	}
+
+	return true
 }
 
 func HasCommonPodSelectors(ingressPodSelectors, PodSelectorInNetPolB map[string]string) (bool, string, string) {
@@ -162,7 +202,9 @@ func IsBreak(netPolAYaml, netPolBYaml string) bool {
 
 	// ingressMap from netPolA - map[pod:a], map[TCP:[80]]
 	// egressMap from netPolB  - map[pod:a], map[TCP:[80 53] UDP:[53]]
-	isSubset := isSubsets(TCP, ingressMap, egressMap)
+
+	// (TODO): Need to check more protocol
+	isSubset := isSubsets(ingressMap, egressMap)
 
 	fmt.Println("Is Subset ", isSubset)
 	if isSubset {
