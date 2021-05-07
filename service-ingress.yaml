@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"NetworkPolicy","metadata":{"annotations":{},"creationTimestamp":"2020-06-17T14:06:53Z","generation":1,"name":"nginx-to-gw-data-services","namespace":"dev-us-ds","resourceVersion":"11922175","selfLink":"/apis/networking.k8s.io/v1/namespaces/dev-us-ds/networkpolicies/nginx-to-gw-data-services","uid":"0d357b33-07ad-4c4f-af53-513fb927ec89"},"spec":{"ingress":[{"from":[{"podSelector":{"matchLabels":{"role":"nginx"}}}],"ports":[{"port":8080,"protocol":"TCP"}]}],"podSelector":{"matchLabels":{"role":"gw-data-services"}},"policyTypes":["Ingress"]}}
+  creationTimestamp: 2020-09-04T15:04:15Z
+  generation: 1
+  name: nginx-to-gw-data-services
+  namespace: dev-us-ds
+  resourceVersion: "31022584"
+  selfLink: /apis/networking.k8s.io/v1/namespaces/dev-us-ds/networkpolicies/nginx-to-gw-data-services
+  uid: 1863164d-cdf4-408c-a083-c4d7da16ed76
+spec:
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: nginx
+      ports:
+        - port: 8080
+          protocol: TCP
+  podSelector:
+    matchLabels:
+      role: gw-data-services
+  policyTypes:
+    - Ingress
