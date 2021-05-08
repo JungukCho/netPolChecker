@@ -178,12 +178,7 @@ func HasCommonSelectors(selectorA, selectorB map[string]string) (bool, string, s
 	return false, "", ""
 }
 
-func IsBreak(netPolAYaml, netPolBYaml string) bool {
-	netPolA := createNetPolObjFromYaml(netPolAYaml)
-	netPolB := createNetPolObjFromYaml(netPolBYaml)
-
-	ingressNsSelectors := IngressNsSelectors(netPolA.Spec.Ingress)
-	fmt.Println(ingressNsSelectors)
+func checkInterSection(netPolA, netPolB *networkingv1.NetworkPolicy) bool {
 	// Check podSelectors
 	// Check to see whether common podSelector between PodSelector from "From" in netPolA and PodSelector from "NetworkPolicy" in netPolB
 	ingressPodSelectors := IngressPodSelectors(netPolA.Spec.Ingress)
@@ -208,6 +203,21 @@ func IsBreak(netPolAYaml, netPolBYaml string) bool {
 
 	// Two netPols have common labels in both sides, we need to check ports information
 	fmt.Println("key : ", key, " val : ", label)
+
+	// may need to check namespace labels
+	/*
+		ingressNsSelectors := IngressNsSelectors(netPolA.Spec.Ingress)
+		fmt.Println(ingressNsSelectors)
+
+		egressNsSelectors := EgressNsSelectors(netPolB.Spec.Egress)
+		fmt.Println(egressNsSelectors)
+	*/
+
+	return true
+}
+
+func checkSubsets(netPolA, netPolB *networkingv1.NetworkPolicy) bool {
+
 	// check whether podSelector's labels from "From" field in "ingress" exist in egress PodSelector in "networkPolicy"
 	ingressMap := IngressPortInfo(netPolA.Spec.Ingress)
 	fmt.Println("Ingress port Map ", ingressMap)
@@ -220,8 +230,20 @@ func IsBreak(netPolAYaml, netPolBYaml string) bool {
 
 	// (TODO): Need to check more protocol
 	isSubset := isSubsets(ingressMap, egressMap)
-
 	fmt.Println("Is Subset ", isSubset)
+	return isSubset
+}
+
+func IsBreak(netPolAYaml, netPolBYaml string) bool {
+	netPolA := createNetPolObjFromYaml(netPolAYaml)
+	netPolB := createNetPolObjFromYaml(netPolBYaml)
+
+	hasInterSection := checkInterSection(netPolA, netPolB)
+	if !hasInterSection {
+		return hasInterSection
+	}
+
+	isSubset := checkSubsets(netPolA, netPolB)
 	if isSubset {
 		fmt.Println("Ok Egress has all port information of ingress")
 		return false
