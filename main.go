@@ -42,7 +42,7 @@ func IngressNsSelectors(ingressRules []networkingv1.NetworkPolicyIngressRule) ma
 	for _, ingressRule := range ingressRules {
 		for _, networkPolicyPeer := range ingressRule.From {
 			if networkPolicyPeer.NamespaceSelector != nil {
-				for key, val := range networkPolicyPeer.PodSelector.MatchLabels {
+				for key, val := range networkPolicyPeer.NamespaceSelector.MatchLabels {
 					ingressNsSelectors[key] = val
 				}
 			}
@@ -166,14 +166,29 @@ func HasCommonPodSelectors(ingressPodSelectors, PodSelectorInNetPolB map[string]
 	return false, "", ""
 }
 
+func HasCommonSelectors(selectorA, selectorB map[string]string) (bool, string, string) {
+	for matchKey, matchVal := range selectorA {
+		val, ok := selectorB[matchKey]
+		if ok {
+			if matchVal == val {
+				return true, matchKey, matchVal
+			}
+		}
+	}
+	return false, "", ""
+}
+
 func IsBreak(netPolAYaml, netPolBYaml string) bool {
 	netPolA := createNetPolObjFromYaml(netPolAYaml)
 	netPolB := createNetPolObjFromYaml(netPolBYaml)
 
+	ingressNsSelectors := IngressNsSelectors(netPolA.Spec.Ingress)
+	fmt.Println(ingressNsSelectors)
+	// Check podSelectors
 	// Check to see whether common podSelector between PodSelector from "From" in netPolA and PodSelector from "NetworkPolicy" in netPolB
 	ingressPodSelectors := IngressPodSelectors(netPolA.Spec.Ingress)
 	PodSelectorInNetPolB := NetPolPodSelector(netPolB)
-	hasCommonPodSelectors, key, label := HasCommonPodSelectors(ingressPodSelectors, PodSelectorInNetPolB)
+	hasCommonPodSelectors, key, label := HasCommonSelectors(ingressPodSelectors, PodSelectorInNetPolB)
 	if !hasCommonPodSelectors {
 		fmt.Println("No Common #1")
 		return false
@@ -185,7 +200,7 @@ func IsBreak(netPolAYaml, netPolBYaml string) bool {
 	// Check to see whether common podSelector between PodSelector from "To" in netPolB and PodSelector from "NetworkPolicy" in netPolA
 	egressPodSelectors := EgressPodSelectors(netPolB.Spec.Egress)
 	PodSelectorInNetPolA := NetPolPodSelector(netPolA)
-	hasCommonPodSelectors, key, label = HasCommonPodSelectors(egressPodSelectors, PodSelectorInNetPolA)
+	hasCommonPodSelectors, key, label = HasCommonSelectors(egressPodSelectors, PodSelectorInNetPolA)
 	if !hasCommonPodSelectors {
 		fmt.Println("No Common #2")
 		return false

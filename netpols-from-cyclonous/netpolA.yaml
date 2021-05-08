@@ -1,0 +1,82 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"NetworkPolicy","metadata":{"annotations":{},"creationTimestamp":null,"name":"base-2","namespace":"z"},"spec":{"egress":[{"ports":[{"port":80,"protocol":"TCP"}],"to":[{"namespaceSelector":{"matchExpressions":[{"key":"ns","operator":"In","values":["y","z"]}]},"podSelector":{"matchExpressions":[{"key":"pod","operator":"In","values":["a","b"]}]}}]},{"ports":[{"port":53,"protocol":"UDP"},{"port":53,"protocol":"TCP"}]}],"ingress":[{"from":[{"namespaceSelector":{"matchExpressions":[{"key":"ns","operator":"In","values":["x","y"]}]},"podSelector":{"matchExpressions":[{"key":"pod","operator":"In","values":["b","c"]}]}}],"ports":[{"port":80,"protocol":"TCP"}]}],"podSelector":{"matchLabels":{"pod":"a"}},"policyTypes":["Ingress","Egress"]}}
+  creationTimestamp: "2021-05-01T00:12:59Z"
+  generation: 1
+  managedFields:
+  - apiVersion: networking.k8s.io/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubectl.kubernetes.io/last-applied-configuration: {}
+      f:spec:
+        f:egress: {}
+        f:ingress: {}
+        f:podSelector:
+          f:matchLabels:
+            .: {}
+            f:pod: {}
+        f:policyTypes: {}
+    manager: kubectl-client-side-apply
+    operation: Update
+    time: "2021-05-01T00:12:59Z"
+  name: base-2
+  namespace: z
+  resourceVersion: "14411"
+  selfLink: /apis/networking.k8s.io/v1/namespaces/z/networkpolicies/base-2
+  uid: 28fe625d-e467-40df-807a-8e147a5af2cb
+spec:
+  egress:
+  - ports:
+    - port: 80
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchExpressions:
+        - key: ns
+          operator: In
+          values:
+          - "y"
+          - z
+      podSelector:
+        matchExpressions:
+        - key: pod
+          operator: In
+          values:
+          - a
+          - b
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchExpressions:
+        - key: ns
+          operator: In
+          values:
+          - x
+          - "y"
+      podSelector:
+        matchExpressions:
+        - key: pod
+          operator: In
+          values:
+          - b
+          - c
+    ports:
+    - port: 80
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      pod: a
+  policyTypes:
+  - Ingress
+  - Egress

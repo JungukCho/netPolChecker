@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"NetworkPolicy","metadata":{"annotations":{},"creationTimestamp":"2020-06-17T14:06:46Z","generation":1,"name":"nginx-to-apiserver","namespace":"dev-us-ds","resourceVersion":"11922151","selfLink":"/apis/networking.k8s.io/v1/namespaces/dev-us-ds/networkpolicies/nginx-to-apiserver","uid":"76d6ca46-92bd-4ea6-a652-e1025533a154"},"spec":{"egress":[{"ports":[{"port":443,"protocol":"TCP"}],"to":[{"ipBlock":{"cidr":"13.83.65.112/32"}}]}],"podSelector":{"matchLabels":{"role":"nginx"}},"policyTypes":["Egress"]}}
+  creationTimestamp: 2020-09-04T15:04:13Z
+  generation: 1
+  name: nginx-to-apiserver
+  namespace: dev-us-ds
+  resourceVersion: "31022576"
+  selfLink: /apis/networking.k8s.io/v1/namespaces/dev-us-ds/networkpolicies/nginx-to-apiserver
+  uid: 4a0b6718-a19f-45cb-aa29-07449b2d2cb5
+spec:
+  egress:
+  - ports:
+    - port: 443
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          egress-ns: egress-ns-nginx
+    - ipBlock:
+        cidr: 13.83.65.112/32
+  podSelector:
+    matchLabels:
+      role: nginx
+  policyTypes:
+  - Egress
